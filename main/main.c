@@ -141,7 +141,7 @@ int main() {
     }
 
     while (true) {
-        switch (state) {tados <=========================================================================
+        switch (state) {
             case 0:
                 idle_state();
                 break;
