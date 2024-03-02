@@ -90,7 +90,8 @@ void wrong_choice(){
         buzzer(WRONG_LIST[i], TIME, BUZZER_PIN);
         gpio_put(LED_LIST[i], 0);
     }
-
+    raund = 0;
+    current_raund = 0;
 };
 
 void right_choice(){
@@ -143,6 +144,7 @@ void main_state() {
         if (current_raund == raund) {
             right_choice();
             raund++;
+            current_raund = 0;
             state = 2;
         }
     } else if (pressed_color != 4){
@@ -160,6 +162,8 @@ void instruction_state() {
 }
 
 void init_state() {
+    raund = 3;
+    current_raund = 0;
     srand(get_seed());
     for (int i=0; i < max_sequence; i++){
         sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
