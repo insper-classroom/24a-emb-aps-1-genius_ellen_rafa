@@ -37,6 +37,8 @@ volatile int green_pressed = 0;
 const int LED_LIST[4] = { LED_RED_PIN, LED_YELLOW_PIN, LED_BLUE_PIN, LED_GREEN_PIN };
 const int BTN_LIST[4] = { BTN_RED_PIN, BTN_YELLOW_PIN, BTN_BLUE_PIN, BTN_GREEN_PIN };
 const int FREQ_LIST[4] = { 250, 500, 750, 1000 };
+const int RIGHT_LIST[4] = { 750, 1000, 1250, 1500 };
+const int WRONG_LIST[4] = { 100, 200, 300, 400 };
 
 const double TIME = 0.5;
 volatile int state = 0;
@@ -123,8 +125,30 @@ void instruction_state() {
     sleep_ms(500);
     for (int i=0; i < raund; i++) {
         use_color(sequence[i]);
+        //raund ++;
     }
     state = 1;
+}
+
+void wrong_choice(){
+    for (int i=3; i >= 0; i--) {
+        gpio_put(LED_LIST[i], 1);
+        buzzer(WRONG_LIST[i], TIME, BUZZER_PIN);
+        gpio_put(LED_LIST[i], 0);
+    }
+
+};
+
+void right_choice(){
+    for (int i=0; i < 4; i++) {
+        gpio_put(LED_LIST[i], 1);
+    }
+    for (int i=0; i<4; i++){
+        buzzer(RIGHT_LIST[i], TIME, BUZZER_PIN);
+    }
+    for (int i=0; i < 4; i++) {
+        gpio_put(LED_LIST[i], 0);
+    }
 }
 
 int main() {
