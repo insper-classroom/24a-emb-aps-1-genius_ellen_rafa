@@ -47,25 +47,13 @@ int sequence[max_sequence];
 int led_index = 0;
 
 // Funções <==========================================================================
-uint64_t get_seed(){
-     return to_us_since_boot(get_absolute_time());
-}
 
 void gpio_callback(uint gpio, uint32_t events) {
     if (gpio == BTN_START_PIN) {
-        if (state == 0) {
-            srand(get_seed());
-            for (int i=0; i<max_sequence; i++){
-                sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
-            }
-            state = 2;
-        } else {
-            state = 0;
-        }
-    } 
-    if (state != 2) {
+        state = (state == 0) ? 3 : 0;
+    } else if (state == 1) {
         if (gpio == BTN_RED_PIN){
-        red_pressed = 1;
+            red_pressed = 1;
         } else if (gpio == BTN_YELLOW_PIN){
             yellow_pressed = 1;
         } else if (gpio == BTN_BLUE_PIN){
@@ -92,6 +80,26 @@ void use_color(int color_id) {
     gpio_put(LED_LIST[color_id], 0);
 }
 
+void wrong_choice(){
+    for (int i=3; i >= 0; i--) {
+        gpio_put(LED_LIST[i], 1);
+        buzzer(WRONG_LIST[i], TIME, BUZZER_PIN);
+        gpio_put(LED_LIST[i], 0);
+    }
+
+};
+
+void right_choice(){
+    for (int i=0; i < 4; i++) {
+        gpio_put(LED_LIST[i], 1);
+    }
+    for (int i=0; i<4; i++){
+        buzzer(RIGHT_LIST[i], TIME, BUZZER_PIN);
+    }
+    for (int i=0; i < 4; i++) {
+        gpio_put(LED_LIST[i], 0);
+    }
+}
 
 // Estados <=========================================================================
 
@@ -130,25 +138,12 @@ void instruction_state() {
     state = 1;
 }
 
-void wrong_choice(){
-    for (int i=3; i >= 0; i--) {
-        gpio_put(LED_LIST[i], 1);
-        buzzer(WRONG_LIST[i], TIME, BUZZER_PIN);
-        gpio_put(LED_LIST[i], 0);
+void init_state() {
+    srand(to_us_since_boot(get_absolute_time()));
+    for (int i=0; i < max_sequence; i++){
+        sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
     }
-
-};
-
-void right_choice(){
-    for (int i=0; i < 4; i++) {
-        gpio_put(LED_LIST[i], 1);
-    }
-    for (int i=0; i<4; i++){
-        buzzer(RIGHT_LIST[i], TIME, BUZZER_PIN);
-    }
-    for (int i=0; i < 4; i++) {
-        gpio_put(LED_LIST[i], 0);
-    }
+    state = 2;
 }
 
 int main() {
@@ -184,6 +179,9 @@ int main() {
                 break;
             case 2:
                 instruction_state();
+                break;
+            case 3:
+                init_state();
                 break;
             default:
                 idle_state();
