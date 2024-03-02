@@ -43,10 +43,14 @@ const int WRONG_LIST[4] = { 100, 200, 300, 400 };
 const double TIME = 0.5;
 volatile int state = 0;
 int raund = 3;
+int current_raund = 0;
 int sequence[max_sequence];
-int led_index = 0;
 
 // Funções <==========================================================================
+
+uint64_t get_seed() {
+     return to_us_since_boot(get_absolute_time());
+}
 
 void gpio_callback(uint gpio, uint32_t events) {
     if (gpio == BTN_START_PIN) {
@@ -104,28 +108,43 @@ void right_choice(){
 // Estados <=========================================================================
 
 void idle_state() {
-    gpio_put(LED_LIST[led_index%4], 1);
-    sleep_ms(250);
-    gpio_put(LED_LIST[led_index%4], 0);
-    led_index++;
+    for (int i=0; i<4; i++) {
+        gpio_put(LED_LIST[i], 1);
+        sleep_ms(250);
+        gpio_put(LED_LIST[i], 0);
+    }
 }
 
 void main_state() {
+    int pressed_color = 4;
     if (red_pressed){
         use_color(RED);
         red_pressed = 0;
+        pressed_color = RED;
     } 
     if (yellow_pressed) {
         use_color(YELLOW);
         yellow_pressed = 0;
+        pressed_color = YELLOW;
     }
     if (blue_pressed){
         use_color(BLUE);
         blue_pressed = 0;
+        pressed_color = BLUE;
     }
     if (green_pressed){
         use_color(GREEN);
         green_pressed = 0;
+        pressed_color = GREEN;
+    }
+
+    if (pressed_color == sequence[current_raund]) {
+        raund++;
+        right_choice();
+        state = 2;
+    } else if (pressed_color != 4){
+        wrong_choice();
+        state = 0;
     }
 }
 
@@ -133,13 +152,12 @@ void instruction_state() {
     sleep_ms(500);
     for (int i=0; i < raund; i++) {
         use_color(sequence[i]);
-        //raund ++;
     }
     state = 1;
 }
 
 void init_state() {
-    srand(to_us_since_boot(get_absolute_time()));
+    srand(get_seed());
     for (int i=0; i < max_sequence; i++){
         sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
     }
