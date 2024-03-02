@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
+#include <stdlib.h> // necessário p/ função rand e srand
+
+#define max_sequence 100
 
 const int BUZZER_PIN = 28;
 const int BTN_START_PIN = 15;
@@ -38,15 +41,21 @@ const int FREQ_LIST[4] = { 250, 500, 750, 1000 };
 const double TIME = 0.5;
 volatile int state = 0;
 int raund = 3;
-int sequence[100] = { 1, 0, 3 };
+int sequence[max_sequence];
 int led_index = 0;
 
 // Funções <==========================================================================
+uint64_t get_seed(){
+     return to_us_since_boot(get_absolute_time());
+}
 
 void gpio_callback(uint gpio, uint32_t events) {
     if (gpio == BTN_START_PIN) {
         if (state == 0) {
-            // coloque a geração da lista aqui!
+            srand(get_seed());
+            for (int i=0; i<max_sequence; i++){
+                sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
+            }
             state = 2;
         } else {
             state = 0;
@@ -120,6 +129,7 @@ void instruction_state() {
 
 int main() {
     stdio_init_all();
+    get_seed();
 
     gpio_init(BUZZER_PIN);
     gpio_set_dir(BUZZER_PIN, GPIO_OUT);
