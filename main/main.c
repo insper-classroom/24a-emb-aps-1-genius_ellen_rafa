@@ -139,9 +139,10 @@ void main_state() {
     }
 
     if (pressed_color == sequence[current_raund]) {
-        raund++;
+        current_raund++;
         if (current_raund == raund) {
             right_choice();
+            raund++;
             state = 2;
         }
     } else if (pressed_color != 4){
