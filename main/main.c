@@ -9,42 +9,36 @@
 #include "hardware/gpio.h"
 #include <stdlib.h> // necessário p/ função rand e srand
 
-#define max_sequence 100
+#define MAX_SEQUENCE 100
+#define TIME 0.5
 
 const int BUZZER_PIN = 28;
 const int BTN_START_PIN = 15;
 
 const int RED = 0;
-const int BTN_RED_PIN = 21;
-const int LED_RED_PIN = 20;
+const int BTN_RED_PIN = 13;
+const int LED_RED_PIN = 12;
 volatile int red_pressed = 0;
 
 const int YELLOW = 1;
-const int BTN_YELLOW_PIN = 19;
-const int LED_YELLOW_PIN = 18;
+const int BTN_YELLOW_PIN = 11;
+const int LED_YELLOW_PIN = 10;
 volatile int yellow_pressed = 0;
 
-const int BLUE = 2;
+const int GREEN = 2;
+const int BTN_GREEN_PIN = 21;
+const int LED_GREEN_PIN = 20;
+volatile int green_pressed = 0;
+
+const int BLUE = 3;
 const int BTN_BLUE_PIN = 17;
 const int LED_BLUE_PIN = 16;
 volatile int blue_pressed = 0;
 
-const int GREEN = 3;
-const int BTN_GREEN_PIN = 27;
-const int LED_GREEN_PIN = 26;
-volatile int green_pressed = 0;
+const int LED_LIST[4] = { LED_RED_PIN, LED_YELLOW_PIN, LED_GREEN_PIN, LED_BLUE_PIN };
+const int BTN_LIST[4] = { BTN_RED_PIN, BTN_YELLOW_PIN, BTN_GREEN_PIN, BTN_BLUE_PIN, };
 
-const int LED_LIST[4] = { LED_RED_PIN, LED_YELLOW_PIN, LED_BLUE_PIN, LED_GREEN_PIN };
-const int BTN_LIST[4] = { BTN_RED_PIN, BTN_YELLOW_PIN, BTN_BLUE_PIN, BTN_GREEN_PIN };
-const int FREQ_LIST[4] = { 250, 500, 750, 1000 };
-const int RIGHT_LIST[4] = { 750, 1000, 1250, 1500 };
-const int WRONG_LIST[4] = { 100, 200, 300, 400 };
-
-const double TIME = 0.5;
 volatile int state = 0;
-int raund = 3;
-int current_raund = 0;
-int sequence[max_sequence];
 
 // Funções <==========================================================================
 
@@ -79,22 +73,28 @@ void buzzer(double freq, double duration, int pin){
 }
 
 void use_color(int color_id) {
+    const int FREQ_LIST[4] = { 250, 500, 750, 1000 };
+
     gpio_put(LED_LIST[color_id], 1);
     buzzer(FREQ_LIST[color_id], TIME, BUZZER_PIN);
     gpio_put(LED_LIST[color_id], 0);
 }
 
 void wrong_choice(){
+    const int WRONG_LIST[4] = { 100, 200, 300, 400 };
+
+    sleep_ms(500);
     for (int i=3; i >= 0; i--) {
         gpio_put(LED_LIST[i], 1);
         buzzer(WRONG_LIST[i], TIME, BUZZER_PIN);
         gpio_put(LED_LIST[i], 0);
     }
-    raund = 0;
-    current_raund = 0;
 };
 
 void right_choice(){
+    const int RIGHT_LIST[4] = { 750, 1000, 1250, 1500 };
+    
+    sleep_ms(500);
     for (int i=0; i < 4; i++) {
         gpio_put(LED_LIST[i], 1);
     }
@@ -116,7 +116,7 @@ void idle_state() {
     }
 }
 
-void main_state() {
+void main_state(int  *round_max, int *current_round, int sequence[MAX_SEQUENCE]) {
     int pressed_color = 4;
     if (red_pressed){
         use_color(RED);
@@ -139,12 +139,12 @@ void main_state() {
         pressed_color = GREEN;
     }
 
-    if (pressed_color == sequence[current_raund]) {
-        current_raund++;
-        if (current_raund == raund) {
+    if (pressed_color == sequence[*current_round]) {
+        *current_round += 1;
+        if (*current_round == *round_max) {
             right_choice();
-            raund++;
-            current_raund = 0;
+            *round_max += 1;
+            *current_round = 0;
             state = 2;
         }
     } else if (pressed_color != 4){
@@ -153,19 +153,26 @@ void main_state() {
     }
 }
 
-void instruction_state() {
+void instruction_state(int round_max, int sequence[MAX_SEQUENCE]) {
     sleep_ms(500);
-    for (int i=0; i < raund; i++) {
+    for (int i=0; i < round_max; i++) {
         use_color(sequence[i]);
+        sleep_ms(250);
     }
     state = 1;
 }
 
-void init_state() {
-    raund = 3;
-    current_raund = 0;
+void init_state(int *round_max, int *current_round, int sequence[MAX_SEQUENCE]) {
+    *round_max = 3;
+    *current_round = 0;
+
+    red_pressed = 0;
+    yellow_pressed = 0;
+    blue_pressed = 0;
+    green_pressed = 0;
+
     srand(get_seed());
-    for (int i=0; i < max_sequence; i++){
+    for (int i=0; i < MAX_SEQUENCE; i++){
         sequence[i] = rand() % 4; // números aleatórios entre 0 e 3
     }
     state = 2;
@@ -194,24 +201,27 @@ int main() {
         gpio_set_dir(LED_LIST[i], GPIO_OUT);
     }
 
+    int round_max = 3;
+    int current_round = 0;
+    int sequence[MAX_SEQUENCE];
+
     while (true) {
         switch (state) {
             case 0:
                 idle_state();
                 break;
             case 1:
-                main_state();
+                main_state(&round_max, &current_round, sequence);
                 break;
             case 2:
-                instruction_state();
+                instruction_state(round_max, sequence);
                 break;
             case 3:
-                init_state();
+                init_state(&round_max, &current_round, sequence);
                 break;
             default:
                 idle_state();
                 break;
         }
-        
     }
 }
