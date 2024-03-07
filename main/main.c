@@ -116,7 +116,7 @@ void idle_state() {
     }
 }
 
-void main_state(int  *round_max, int *current_round, int sequence[MAX_SEQUENCE]) {
+void main_state(int  *round_max, int *current_round, const int sequence[MAX_SEQUENCE]) {
     int pressed_color = 4;
     if (red_pressed){
         use_color(RED);
@@ -153,7 +153,7 @@ void main_state(int  *round_max, int *current_round, int sequence[MAX_SEQUENCE])
     }
 }
 
-void instruction_state(int round_max, int sequence[MAX_SEQUENCE]) {
+void instruction_state(int round_max, const int sequence[MAX_SEQUENCE]) {
     sleep_ms(500);
     for (int i=0; i < round_max; i++) {
         use_color(sequence[i]);
