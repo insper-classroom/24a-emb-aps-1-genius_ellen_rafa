@@ -32,6 +32,8 @@ void use_color(int color_id);
 
 void wrong_choice();
 
+void show_score(int *pontuation);
+
 void right_choice();
 
 #endif

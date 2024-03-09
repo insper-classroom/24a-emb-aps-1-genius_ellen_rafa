@@ -39,7 +39,7 @@ void gpio_callback(uint gpio, uint32_t events) {
 
 // Estados <=========================================================================
 
-void main_state(int  *round_max, int *current_round, const int sequence[MAX_SEQUENCE]) {
+void main_state(int  *round_max, int *current_round, int *total_round, const int sequence[MAX_SEQUENCE]) {
     int pressed_color = 4;
     if (red_pressed){
         use_color(RED);
@@ -66,12 +66,14 @@ void main_state(int  *round_max, int *current_round, const int sequence[MAX_SEQU
         *current_round += 1;
         if (*current_round == *round_max) {
             right_choice();
+            *total_round += 1;
             *round_max += 1;
             *current_round = 0;
             state = 2;
         }
     } else if (pressed_color != 4){
         wrong_choice();
+        show_score(total_round);
         state = 0;
     }
 }
@@ -85,9 +87,10 @@ void instruction_state(int round_max, const int sequence[MAX_SEQUENCE]) {
     state = 1;
 }
 
-void init_state(int *round_max, int *current_round, int sequence[MAX_SEQUENCE]) {
+void init_state(int *round_max, int *current_round, int *total_round, int sequence[MAX_SEQUENCE]) {
     *round_max = 3;
     *current_round = 0;
+    *total_round = 0;
 
     red_pressed = 0;
     yellow_pressed = 0;
@@ -106,6 +109,7 @@ int main() {
     gpio_init_all(&gpio_callback);
 
     int round_max = 3;
+    int total_round = 0;
     int current_round = 0;
     int sequence[MAX_SEQUENCE];
 
@@ -115,13 +119,13 @@ int main() {
                 idle_state();
                 break;
             case 1:
-                main_state(&round_max, &current_round, sequence);
+                main_state(&round_max, &current_round, &total_round, sequence);
                 break;
             case 2:
                 instruction_state(round_max, sequence);
                 break;
             case 3:
-                init_state(&round_max, &current_round, sequence);
+                init_state(&round_max, &current_round, &total_round, sequence);
                 break;
             default:
                 idle_state();

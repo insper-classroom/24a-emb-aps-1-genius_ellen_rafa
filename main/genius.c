@@ -45,6 +45,24 @@ void use_color(int color_id) {
     gpio_put(LED_LIST[color_id], 0);
 }
 
+void show_score(int *pontuation) {
+    int l = 0;
+    int j = 1;
+
+    sleep_ms(500);
+    for (int p = 0; p < *pontuation; p += 5){
+        for (int i = 1; i <= 5*j; i++){
+            if (i > *pontuation){
+                break;
+            }
+            use_color(l);
+            sleep_ms(250);
+        }
+        j++;
+        l++;
+    }
+}
+
 void wrong_choice() {
     const int WRONG_LIST[4] = { 100, 200, 300, 400 };
 
