@@ -30,7 +30,7 @@ void idle_state();
 
 void use_color(int color_id);
 
-void wrong_choice();
+void wrong_choice(alarm_id_t *alarm_ptr, bool *active_alarm);
 
 void show_score(int *pontuation);
 

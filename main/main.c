@@ -16,6 +16,7 @@ volatile int red_pressed = 0;
 volatile int yellow_pressed = 0;
 volatile int green_pressed = 0;
 volatile int blue_pressed = 0;
+volatile bool timer_fired = false;
 
 volatile int state = 0;
 
@@ -37,26 +38,48 @@ void gpio_callback(uint gpio, uint32_t events) {
     }
 };
 
+int64_t alarm_callback(alarm_id_t id, void *user_data) {
+    timer_fired = true;
+    return 0;
+};
+
 // Estados <=========================================================================
 
-void main_state(int  *round_max, int *current_round, int *total_round, const int sequence[MAX_SEQUENCE]) {
+void main_state(int  *round_max, int *current_round, int *total_round, const int sequence[MAX_SEQUENCE], alarm_id_t *alarm_ptr, bool *active_alarm) {
     int pressed_color = 4;
+    
     if (red_pressed){
+        if (*active_alarm){
+            cancel_alarm(*alarm_ptr);
+            *active_alarm = false;
+        }
         use_color(RED);
         red_pressed = 0;
         pressed_color = RED;
     } 
     if (yellow_pressed) {
+        if (*active_alarm){
+            cancel_alarm(*alarm_ptr);
+            *active_alarm = false;
+        }
         use_color(YELLOW);
         yellow_pressed = 0;
         pressed_color = YELLOW;
     }
     if (blue_pressed){
+        if (*active_alarm){
+            cancel_alarm(*alarm_ptr);
+            *active_alarm = false;
+        }
         use_color(BLUE);
         blue_pressed = 0;
         pressed_color = BLUE;
     }
     if (green_pressed){
+        if (*active_alarm){
+            cancel_alarm(*alarm_ptr);
+            *active_alarm = false;
+        }
         use_color(GREEN);
         green_pressed = 0;
         pressed_color = GREEN;
@@ -71,19 +94,22 @@ void main_state(int  *round_max, int *current_round, int *total_round, const int
             *current_round = 0;
             state = 2;
         }
-    } else if (pressed_color != 4){
-        wrong_choice();
+    } else if (pressed_color != 4 || timer_fired){
+        wrong_choice(alarm_ptr, active_alarm);
         show_score(total_round);
+        timer_fired = 0;
         state = 0;
     }
 }
 
-void instruction_state(int round_max, const int sequence[MAX_SEQUENCE]) {
+void instruction_state(int round_max, const int sequence[MAX_SEQUENCE], alarm_id_t *alarm_ptr, bool *active_alarm) {
     sleep_ms(500);
     for (int i=0; i < round_max; i++) {
         use_color(sequence[i]);
         sleep_ms(250);
     }
+    *alarm_ptr = add_alarm_in_ms(60000, alarm_callback, NULL, false);
+    *active_alarm = true;
     state = 1;
 }
 
@@ -112,6 +138,8 @@ int main() {
     int total_round = 0;
     int current_round = 0;
     int sequence[MAX_SEQUENCE];
+    bool active_alarm = false;
+    alarm_id_t alarm;
 
     while (true) {
         switch (state) {
@@ -119,10 +147,10 @@ int main() {
                 idle_state();
                 break;
             case 1:
-                main_state(&round_max, &current_round, &total_round, sequence);
+                main_state(&round_max, &current_round, &total_round, sequence, &alarm, &active_alarm);
                 break;
             case 2:
-                instruction_state(round_max, sequence);
+                instruction_state(round_max, sequence, &alarm, &active_alarm);
                 break;
             case 3:
                 init_state(&round_max, &current_round, &total_round, sequence);

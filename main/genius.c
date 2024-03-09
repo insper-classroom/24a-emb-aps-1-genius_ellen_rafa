@@ -63,7 +63,12 @@ void show_score(int *pontuation) {
     }
 }
 
-void wrong_choice() {
+void wrong_choice(alarm_id_t *alarm_ptr, bool *active_alarm) {
+    if(*active_alarm){
+        cancel_alarm(*alarm_ptr);
+        *active_alarm = false;
+    }
+
     const int WRONG_LIST[4] = { 100, 200, 300, 400 };
 
     sleep_ms(500);
