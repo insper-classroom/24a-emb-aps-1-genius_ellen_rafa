@@ -5,7 +5,7 @@ Genius é um jogo de memória que exibe uma sequência de cores (e seus respecti
 
 ### [Vídeo Demonstrativo](https://youtu.be/P4mHPx7z5Bs)
 
-![Imagem do Protótipo](https://imgur.com/a/dD0j6Gq)
+<img alt="Imagem do Protótipo" src="https://imgur.com/a/dD0j6Gq">
 
 ### Funcionalidades do Jogo
 - Sequência aleatória a cada jogada;
