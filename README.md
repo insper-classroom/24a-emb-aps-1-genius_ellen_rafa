@@ -1,5 +1,5 @@
 # Genius
-Jogo Geniu desenvolvido e prototipado para a APS 1 da disciplina Computação Embarcada Insper 2024.1. O enunciado da tarefa está disponível nesse [link](https://insper-embarcados.github.io/site/aps/aps-1-genius/).
+Jogo Genius desenvolvido e prototipado para a APS 1 da disciplina Computação Embarcada Insper 2024.1. O enunciado da tarefa está disponível nesse [link](https://insper-embarcados.github.io/site/aps/aps-1-genius/).
 
 Genius é um jogo de memória que exibe uma sequência de cores (e seus respectivos sons) para serem repetidos na ordem correta.
 
