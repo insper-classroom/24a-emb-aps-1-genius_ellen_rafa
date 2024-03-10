@@ -31,8 +31,8 @@ O protótipo físico foi construido utilizando os seguintes componentes e materi
 
 ### Critérios Avaliativos
     C : Apresentar um funcionamento similar ao jogo com dificuldade progressiva e sequência aleatória;
-    C+: Apresentar um protótipo físico funcinal do jogo;
-    B : Organizar o código em arquivos .c e .h seprando o código em funções para maior organização;
+    C+: Apresentar um protótipo físico funcional do jogo;
+    B : Organizar o código em arquivos .c e .h separando o código em funções para maior organização;
     B+: Implementar o código em formato de máquina de estados;
     A : Implementar a perda do jogo por inatividade;
     A+: Exibir pontuação final ao término de uma rodada
